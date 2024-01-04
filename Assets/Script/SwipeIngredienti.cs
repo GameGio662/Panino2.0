@@ -8,6 +8,7 @@ public class SwipeIngredienti : MonoBehaviour
     private Vector2 fingerUpPosition;
     private float minDistanceForSwipe = 20f;
     private GameObject selectedObject;
+    private bool canMove = true;
 
     void Update()
     {
@@ -21,7 +22,7 @@ public class SwipeIngredienti : MonoBehaviour
         {
             Touch touch = Input.GetTouch(0);
 
-            if (touch.phase == TouchPhase.Began && selectedObject == null)
+            if (touch.phase == TouchPhase.Began && canMove)
             {
                 SelectObject(touch.position);
             }
@@ -36,6 +37,7 @@ public class SwipeIngredienti : MonoBehaviour
         if (Physics.Raycast(ray, out hit))
         {
             selectedObject = hit.collider.gameObject;
+            canMove = false;
         }
     }
 
@@ -55,9 +57,7 @@ public class SwipeIngredienti : MonoBehaviour
 
                 if (touch.phase == TouchPhase.Ended)
                 {
-                    fingerUpPosition = touch.position;
-                    MoveObject();
-                    selectedObject = null; // Deseleziona l'oggetto dopo lo swipe
+                    canMove = true;
                 }
             }
         }
@@ -68,26 +68,18 @@ public class SwipeIngredienti : MonoBehaviour
         float deltaX = fingerUpPosition.x - fingerDownPosition.x;
         float deltaY = fingerUpPosition.y - fingerDownPosition.y;
 
-        if (Mathf.Abs(deltaX) > Mathf.Abs(deltaY))
+        if (Mathf.Abs(deltaX) > minDistanceForSwipe)
         {
             // Spostamento orizzontale
-            if (Mathf.Abs(deltaX) > minDistanceForSwipe)
+            if (deltaX > 0)
             {
-                if (deltaX > 0)
-                    selectedObject.transform.Translate(Vector3.right, Space.World);
-                else if (deltaX < 0)
-                    selectedObject.transform.Translate(Vector3.left, Space.World);
+                selectedObject.transform.Translate(Vector3.right, Space.World);
+                selectedObject.transform.Rotate(Vector3.up, 180f);
             }
-        }
-        else
-        {
-            // Spostamento verticale
-            if (Mathf.Abs(deltaY) > minDistanceForSwipe)
+            else if (deltaX < 0)
             {
-                if (deltaY > 0)
-                    selectedObject.transform.Translate(Vector3.up, Space.World);
-                else if (deltaY < 0)
-                    selectedObject.transform.Translate(Vector3.down, Space.World);
+                selectedObject.transform.Translate(Vector3.left, Space.World);
+                selectedObject.transform.Rotate(Vector3.up, 180f);
             }
         }
 
